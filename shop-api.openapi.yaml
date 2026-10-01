@@ -101,6 +101,64 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [catalogs]
+      operationId: createCatalog
+      summary: Создать каталог
+      description: |
+        Создаёт каталог. Возвращает 201, заголовок Location и тело каталога.
+        Slug уникален — нарушение даёт 409.
+        
+        Коды: 201, 400, 401, 403, 409, 422, 429, 500.
+      security:
+        - bearerAuth: [catalogs:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogCreate'
+            example:
+              name: Электроника
+              slug: electronics
+              description: Электроника и гаджеты
+              isActive: true
+      responses:
+        '201':
+          description: Каталог создан
+          headers:
+            Location:
+              description: URI созданного каталога
+              schema:
+                type: string
+                format: uri
+              example: /v1/catalogs/1
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Catalog'
+              example:
+                id: 1
+                name: Электроника
+                slug: electronics
+                description: Электроника и гаджеты
+                isActive: true
+                createdAt: '2026-01-15T10:00:00Z'
+                updatedAt: '2026-01-15T10:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /catalogs/{catalogId}:
     parameters:
       - $ref: '#/components/parameters/catalogId'
@@ -132,6 +190,55 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags: [catalogs]
+      operationId: updateCatalog
+      summary: Обновить каталог
+      description: |
+        JSON Merge Patch (RFC 7386). Все поля optional.
+        
+        Коды: 200, 400, 401, 403, 404, 409, 422, 429, 500.
+      security:
+        - bearerAuth: [catalogs:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogUpdate'
+            example:
+              description: Обновлённое описание
+      responses:
+        '200':
+          description: Каталог обновлён
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Catalog'
+              example:
+                id: 1
+                name: Электроника
+                slug: electronics
+                description: Обновлённое описание
+                isActive: true
+                createdAt: '2026-01-15T10:00:00Z'
+                updatedAt: '2026-01-20T13:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '500':
@@ -224,6 +331,119 @@ paths:
                   hasPrev: false
         '400':
           $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [categories]
+      operationId: createCategory
+      summary: Создать категорию
+      description: |
+        Создаёт категорию. Если catalogId не существует — 422.
+        Slug уникален внутри каталога.
+        
+        Коды: 201, 400, 401, 403, 409, 422, 429, 500.
+      security:
+        - bearerAuth: [catalogs:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreate'
+            example:
+              catalogId: 1
+              name: Ноутбуки
+              slug: laptops
+              sortOrder: 10
+              isActive: true
+      responses:
+        '201':
+          description: Категория создана
+          headers:
+            Location:
+              description: URI созданной категории
+              schema:
+                type: string
+                format: uri
+              example: /v1/categories/7
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Category'
+              example:
+                id: 7
+                catalogId: 1
+                name: Ноутбуки
+                slug: laptops
+                sortOrder: 10
+                isActive: true
+                createdAt: '2026-01-15T10:00:00Z'
+                updatedAt: '2026-01-15T10:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /categories/{categoryId}:
+    parameters:
+      - $ref: '#/components/parameters/categoryId'
+    patch:
+      tags: [categories]
+      operationId: updateCategory
+      summary: Обновить категорию
+      description: |
+        JSON Merge Patch (RFC 7386). Все поля optional.
+        
+        Коды: 200, 400, 401, 403, 404, 409, 422, 429, 500.
+      security:
+        - bearerAuth: [catalogs:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdate'
+            example:
+              name: Игровые ноутбуки
+      responses:
+        '200':
+          description: Категория обновлена
+          content:
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/Category'
+              example:
+                id: 7
+                catalogId: 1
+                name: Игровые ноутбуки
+                slug: laptops
+                sortOrder: 10
+                isActive: true
+                createdAt: '2026-01-15T10:00:00Z'
+                updatedAt: '2026-01-20T13:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         '500':
@@ -830,6 +1050,16 @@ components:
         format: int64 
         minimum: 1
       example: 3
+    categoryId: 
+      name: categoryId
+      in: path
+      description: Айди категории
+      required: true 
+      schema: 
+        type: integer 
+        format: int64 
+        minimum: 1
+      example: 7
     productId: 
       name: productId
       in: path
@@ -1633,3 +1863,112 @@ components:
             pending/confirmed — cancelled (delivered и cancelled — финальные)
             Недопустимый переход — 422
           example: confirmed
+    CatalogCreate:
+      type: object
+      required: [name, slug]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          description: Название каталога
+          example: Электроника
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 60
+          pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+          description: URL-идентификатор (уникален)
+          example: electronics
+        description:
+          type: string
+          maxLength: 500
+          description: Описание каталога
+          example: Электроника и гаджеты
+        isActive:
+          type: boolean
+          default: true
+          description: Активен ли каталог
+          example: true
+    CatalogUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: Электроника
+        slug:
+          type: string
+          minLength: 2
+          maxLength: 60
+          pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+          example: electronics
+        description:
+          type: string
+          maxLength: 500
+          example: Электроника и гаджеты
+        isActive:
+          type: boolean
+          example: true
+    CategoryCreate:
+      type: object
+      required: [catalogId, name, slug]
+      properties:
+        catalogId:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Каталог. Должен существовать, иначе 422
+          example: 1
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+          example: Ноутбуки
+        slug:
+          type: string
+          pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+          description: Уникален внутри каталога
+          example: laptops
+        imageUrl:
+          type: string
+          format: uri
+          example: https://cdn.shop.example/categories/laptops.png
+        sortOrder:
+          type: integer
+          format: int32
+          default: 0
+          example: 10
+        isActive:
+          type: boolean
+          default: true
+          example: true
+    CategoryUpdate:
+      type: object
+      properties:
+        catalogId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+          example: Ноутбуки
+        slug:
+          type: string
+          pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+          example: laptops
+        imageUrl:
+          type: string
+          format: uri
+          example: https://cdn.shop.example/categories/laptops.png
+        sortOrder:
+          type: integer
+          format: int32
+          example: 10
+        isActive:
+          type: boolean
+          example: true
